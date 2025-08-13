@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { KeyRound, ShieldAlert, Loader2, MessageSquare, Clock, User, Trash2, Search, Inbox, BookMarked, Users, Newspaper, PlusCircle } from 'lucide-react';
+import { KeyRound, ShieldAlert, Loader2, MessageSquare, Clock, User, Trash2, Search, Inbox, BookMarked, Users, Newspaper, PlusCircle, Reply } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,6 +71,11 @@ export default function AdminPage() {
       setMessages(result.messages as Message[]);
     } else {
       setError(result.error || "Failed to fetch messages.");
+      toast({
+        variant: 'destructive',
+        title: 'Error fetching messages',
+        description: result.error || 'There was an issue loading messages from the database. Make sure your Firestore security rules are configured correctly for server-side access.',
+      });
     }
     setIsLoading(false);
   };

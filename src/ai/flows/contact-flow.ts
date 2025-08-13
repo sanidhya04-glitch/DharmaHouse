@@ -66,6 +66,12 @@ const contactFlow = ai.defineFlow(
     outputSchema: SendContactMessageOutputSchema,
   },
   async (input) => {
+    if (!db) {
+        const errorMsg = 'Firestore database is not initialized. Check server credentials.';
+        console.error(errorMsg);
+        return { success: false, error: errorMsg };
+    }
+      
     const messagesCollection = db.collection('contactMessages');
 
     if (input.isAdmin) {

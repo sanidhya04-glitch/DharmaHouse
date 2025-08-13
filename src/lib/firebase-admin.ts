@@ -1,15 +1,21 @@
 
 import * as admin from 'firebase-admin';
+import { Firestore } from 'firebase-admin/firestore';
 
-if (!admin.apps.length) {
-  try {
+let db: Firestore;
+
+try {
+  if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
     });
-  } catch (error) {
-    console.error('Firebase admin initialization error', error);
   }
+  db = admin.firestore();
+} catch (error) {
+  console.error('Firebase admin initialization error', error);
+  // db will remain uninitialized
 }
 
-const db = admin.firestore();
+// Export a potentially uninitialized db object.
+// The code using it should handle the case where it's not available.
 export { db };

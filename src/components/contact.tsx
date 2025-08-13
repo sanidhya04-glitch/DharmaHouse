@@ -1,3 +1,4 @@
+
 'use client';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -30,18 +31,19 @@ export function ContactSection() {
   });
 
   const onSubmit: SubmitHandler<SendContactMessageInput> = async (data) => {
-    try {
-      await sendContactMessage(data);
+    const result = await sendContactMessage(data);
+
+    if (result.success) {
       toast({
         title: "Message Sent!",
-        description: "Thank you for contacting us. We will get back to you shortly.",
+        description: "Thank you for contacting us. We have received your message.",
       });
       form.reset();
-    } catch (error) {
+    } else {
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your request. Please try again.",
+        description: result.error || "There was a problem with your request. Please try again.",
       });
     }
   };

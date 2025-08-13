@@ -32,7 +32,15 @@ const SendContactMessageInputSchema = z.object({
   email: z.string().email().describe('The email address of the sender.'),
   message: z.string().describe('The message content.'),
   isAdmin: z.boolean().optional().describe('A flag to indicate if this is an admin request to fetch messages.'),
+}).superRefine((data, ctx) => {
+    // If it's an admin request, the email is not required to be a valid email.
+    // The validation for email can be skipped.
+    if (data.isAdmin) {
+        return true;
+    }
+    // For non-admin requests, proceed with default email validation.
 });
+
 
 export type SendContactMessageInput = z.infer<
   typeof SendContactMessageInputSchema

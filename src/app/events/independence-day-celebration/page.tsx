@@ -32,11 +32,26 @@ export default function IndependenceDayPage() {
                             </p>
                             <h2 className="font-headline text-3xl text-primary">Schedule of Events</h2>
                             <ul>
-                                <li><strong>8:00 AM:</strong> Flag Hoisting Ceremony at the School Ground</li>
-                                <li><strong>9:00 AM:</strong> Special Assembly featuring patriotic songs and speeches</li>
-                                <li><strong>10:00 AM:</strong> Inter-House March Past Competition</li>
-                                <li><strong>11:00 AM:</strong> Cultural Program showcasing dances and skits</li>
-                                <li><strong>12:00 PM:</strong> Prize Distribution</li>
+                                <li>ESCORTING OF GUEST</li>
+                                <li>WELCOMING OF GUESTS WITH BOUQUET</li>
+                                <li>PINNING THE BADGES TO THE GUEST</li>
+                                <li>FLAG HOISTING WITH NATIONAL ANTHEM</li>
+                                <li>MARCH PAST BY STUDENTS' COUNCIL</li>
+                                <li>WELCOME SONG</li>
+                                <li>SPEECH BY PRINCIPAL SIR</li>
+                                <li>PT BY CLASS 1 TO 5</li>
+                                <li>SPEECH BY STUDENT</li>
+                                <li>MARTIAL ARTS AND YOGA DEMONSTRATION</li>
+                                <li>Speech by student</li>
+                                <li>DUMBELL AND LAZIM PT</li>
+                                <li>SPEECH BY CHIEF GUEST (CHAIRMAN SIR)</li>
+                                <li>CLASSICAL DANCE</li>
+                                <li>KG STUDENTS' DANCE</li>
+                                <li>REGIONAL DANCES</li>
+                                <li>PATRIOTIC DANCE</li>
+                                <li>GROUP SONG</li>
+                                <li>MUSICAL DRAMA</li>
+                                <li>VOTE OF THANKS</li>
                             </ul>
                             <p>
                                 All students, parents, and teachers are cordially invited to attend and make this day a memorable one. Let's come together to celebrate the unity and diversity of our great nation.

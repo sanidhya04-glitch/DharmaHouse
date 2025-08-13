@@ -16,7 +16,7 @@ type Message = {
   name: string;
   email: string;
   message: string;
-  createdAt: Timestamp | Date;
+  createdAt: string; // Changed from Timestamp | Date
 };
 
 const SECRET_CODE = 'DHARMA@2003';
@@ -55,24 +55,21 @@ export default function AdminPage() {
     }
   };
   
-  const formatDate = (date: Timestamp | Date | null) => {
-    if (!date) return 'No date';
-    // Check if it's a Firestore Timestamp and convert if so
-    if (typeof (date as Timestamp).toDate === 'function') {
-        return (date as Timestamp).toDate().toLocaleString();
-    }
-    // Otherwise, assume it's already a Date object (or a string that can be parsed)
-    return new Date(date).toLocaleString();
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'No date';
+    return new Date(dateString).toLocaleString();
   };
 
   if (!isAuthenticated) {
     return (
       <div className="flex flex-col min-h-dvh bg-background text-foreground dark">
         <Header />
-        <main className="flex-1 flex items-center justify-center pt-20">
-          <Card className="w-full max-w-md mx-4 shadow-2xl bg-card border-border/20">
+        <main className="flex-1 flex items-center justify-center pt-20 bg-grid-white/[0.05]">
+          <Card className="w-full max-w-md mx-4 shadow-2xl bg-card/80 backdrop-blur-sm border-white/10 animate-fade-in-up">
             <CardHeader className="text-center">
-              <KeyRound className="mx-auto h-12 w-12 text-primary" />
+              <div className="mx-auto w-fit p-4 bg-primary/10 rounded-full border border-primary/20 shadow-inner">
+                <KeyRound className="h-10 w-10 text-primary" />
+              </div>
               <CardTitle className="font-headline text-3xl mt-4">Admin Access</CardTitle>
               <CardDescription>Please enter the secret code to view messages.</CardDescription>
             </CardHeader>
@@ -90,7 +87,7 @@ export default function AdminPage() {
                   Unlock
                 </Button>
                 {error && (
-                    <div className="flex items-center gap-2 text-destructive text-sm font-medium">
+                    <div className="flex items-center gap-2 text-destructive text-sm font-medium p-3 bg-destructive/10 rounded-md border border-destructive/20">
                         <ShieldAlert className="h-4 w-4" />
                         <p>{error}</p>
                     </div>
@@ -107,9 +104,9 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground dark">
       <Header />
-      <main className="flex-1 pt-28">
+      <main className="flex-1 pt-28 bg-grid-white/[0.05]">
         <section className="container max-w-7xl mx-auto">
-            <div className="text-center mb-16">
+            <div className="text-center mb-16 animate-fade-in-up">
                 <h1 className="font-headline text-4xl md:text-5xl font-bold text-gradient">Admin Dashboard</h1>
                 <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-lg">
                     Viewing all messages sent via the contact form.
@@ -122,10 +119,10 @@ export default function AdminPage() {
                 </div>
             ) : messages.length > 0 ? (
                 <div className="space-y-8">
-                    {messages.map((msg) => (
-                        <Card key={msg.id} className="bg-card/50 border-border/20 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
+                    {messages.map((msg, i) => (
+                        <Card key={msg.id} className="bg-card/50 backdrop-blur-sm border-white/10 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
                             <CardHeader>
-                                <div className="flex justify-between items-start">
+                                <div className="flex justify-between items-start flex-wrap gap-4">
                                     <div>
                                         <CardTitle className="flex items-center gap-3 text-2xl font-headline">
                                             <User className="text-primary" /> 
@@ -152,7 +149,7 @@ export default function AdminPage() {
                     ))}
                 </div>
             ) : (
-                <div className="text-center text-muted-foreground text-lg border-2 border-dashed border-border/30 rounded-xl p-12">
+                <div className="text-center text-muted-foreground text-lg border-2 border-dashed border-white/10 rounded-xl p-12 bg-card/50 backdrop-blur-sm">
                     <MessageSquare className="mx-auto h-12 w-12" />
                     <p className="mt-4">No messages have been received yet.</p>
                 </div>

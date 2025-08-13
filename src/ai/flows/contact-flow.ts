@@ -10,10 +10,22 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { getFirestore, collection, addDoc, serverTimestamp, query, getDocs, orderBy } from 'firebase/firestore';
-import { app } from '@/lib/firebase';
-import nodemailer from 'nodemailer';
 import 'dotenv/config';
+import fs from 'fs/promises';
+import path from 'path';
+
+// Define the path for the messages file
+const messagesDir = path.join(process.cwd(), 'messages');
+const messagesFilePath = path.join(messagesDir, 'messages.json');
+
+// Ensure the messages directory exists
+const ensureDirectoryExists = async () => {
+  try {
+    await fs.mkdir(messagesDir, { recursive: true });
+  } catch (error) {
+    console.error('Error creating messages directory:', error);
+  }
+};
 
 const SendContactMessageInputSchema = z.object({
   name: z.string().describe('The name of the person sending the message.'),
@@ -26,10 +38,18 @@ export type SendContactMessageInput = z.infer<
   typeof SendContactMessageInputSchema
 >;
 
+const MessageSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string(),
+    message: z.string(),
+    createdAt: z.string(),
+});
+
 const SendContactMessageOutputSchema = z.object({
   success: z.boolean(),
   error: z.string().optional(),
-  messages: z.array(z.any()).optional(),
+  messages: z.array(MessageSchema).optional(),
 });
 
 export type SendContactMessageOutput = z.infer<
@@ -49,80 +69,59 @@ const contactFlow = ai.defineFlow(
     outputSchema: SendContactMessageOutputSchema,
   },
   async (input) => {
-    const db = getFirestore(app);
-    const contactsCollection = collection(db, 'contacts');
+    await ensureDirectoryExists();
 
     if (input.isAdmin) {
       // Admin is requesting to fetch messages
       try {
-        const q = query(contactsCollection, orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        const messages = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt.toDate(), // Convert Firestore Timestamp to JS Date
-        }));
+        const fileContent = await fs.readFile(messagesFilePath, 'utf-8');
+        const messages = JSON.parse(fileContent);
+        // Sort messages by date, newest first
+        messages.sort((a: { createdAt: string }, b: { createdAt: string }) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         return { success: true, messages };
-      } catch (error) {
-        console.error('Error fetching messages from Firestore:', error);
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          // File doesn't exist yet, which is fine. Return empty array.
+          return { success: true, messages: [] };
+        }
+        console.error('Error reading messages from file:', error);
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
         return { success: false, error: `Failed to fetch messages: ${errorMessage}` };
       }
     }
 
-
     // A user is sending a message
-    // 1. Save to Firestore
     try {
-      await addDoc(contactsCollection, {
+      let messages = [];
+      try {
+        const fileContent = await fs.readFile(messagesFilePath, 'utf-8');
+        messages = JSON.parse(fileContent);
+      } catch (error: any) {
+        if (error.code !== 'ENOENT') {
+          throw error; // Rethrow if it's not a "file not found" error
+        }
+        // If file doesn't exist, we'll create it with the new message.
+      }
+
+      const newMessage = {
+        id: new Date().getTime().toString(), // Simple unique ID
         name: input.name,
         email: input.email,
         message: input.message,
-        createdAt: serverTimestamp(),
-      });
-      console.log('Message saved to Firestore successfully');
-    } catch (error) {
-      console.error('Error saving message to Firestore:', error);
-      // We can still try to send the SMS even if Firestore fails
-    }
-
-    // 2. Send as SMS via email-to-sms gateway
-    try {
-      if (!process.env.APP_EMAIL || !process.env.APP_PASSWORD) {
-        throw new Error('Email credentials are not configured in environment variables.');
-      }
-      if (!process.env.SMS_GATEWAY_ADDRESS) {
-        throw new Error('SMS Gateway Address is not configured in environment variables.');
-      }
-
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.APP_EMAIL,
-          pass: process.env.APP_PASSWORD,
-        },
-      });
-
-      const mailOptions = {
-        from: `"${input.name}" <${process.env.APP_EMAIL}>`,
-        to: process.env.SMS_GATEWAY_ADDRESS, // The recipient's email-to-sms gateway address
-        subject: `New Message from ${input.name}`,
-        text: `From: ${input.name} <${input.email}>\n\nMessage: ${input.message}`,
-        html: `
-          <p><b>From:</b> ${input.name} &lt;${input.email}&gt;</p>
-          <p><b>Message:</b></p>
-          <p>${input.message}</p>
-        `,
+        createdAt: new Date().toISOString(),
       };
 
-      await transporter.sendMail(mailOptions);
-      console.log('Message sent via email-to-sms gateway successfully');
+      messages.push(newMessage);
+
+      await fs.writeFile(messagesFilePath, JSON.stringify(messages, null, 2), 'utf-8');
+      
+      console.log('Message saved to file successfully');
       return { success: true };
 
     } catch (error) {
-        console.error('Error sending message via email-to-sms gateway:', error);
-        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-        return { success: false, error: `Failed to send message: ${errorMessage}` };
+      console.error('Error saving message to file:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      return { success: false, error: `Failed to save message: ${errorMessage}` };
     }
   }
 );

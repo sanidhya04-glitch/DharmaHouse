@@ -13,6 +13,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Initialize Firebase client app
+  app;
   return (
     <html lang="en" className="scroll-smooth">
       <head>

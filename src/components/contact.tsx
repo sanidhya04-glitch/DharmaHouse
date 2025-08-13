@@ -54,11 +54,11 @@ export function ContactSection() {
               <div className="space-y-4">
                 <div className="flex items-center gap-4 text-lg">
                   <Mail className="h-6 w-6 text-primary" />
-                  <a href="mailto:dharmahouse@hasdeopublicschool.com" className="hover:text-primary">dharmahouse@hasdeopublicschool.com</a>
+                  <a href="mailto:sanidhyaupadhyay04@gmail.com" className="hover:text-primary">sanidhyaupadhyay04@gmail.com</a>
                 </div>
                  <div className="flex items-center gap-4 text-lg">
                   <Phone className="h-6 w-6 text-primary" />
-                  <span>+91 74897 09344</span>
+                  <span>+91 7489 709 344</span>
                 </div>
                 <div className="flex items-start gap-4 text-lg">
                    <MapPin className="h-6 w-6 text-primary mt-1 flex-shrink-0" />

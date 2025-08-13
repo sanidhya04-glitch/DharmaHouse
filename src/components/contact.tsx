@@ -61,10 +61,6 @@ export function ContactSection() {
               <h2 className="font-headline text-4xl md:text-5xl font-bold text-gradient">Get in Touch</h2>
               <p className="text-muted-foreground text-lg">Have a question or a message for us? We'd love to hear from you. Reach out through the form or contact us directly.</p>
               <div className="space-y-4">
-                <a href="mailto:sanidhyaupadhyay04@gmail.com" className="flex items-center gap-4 text-lg group">
-                  <Mail className="h-6 w-6 text-primary" />
-                  <span className="group-hover:text-primary transition-colors">sanidhyaupadhyay04@gmail.com</span>
-                </a>
                  <div className="flex items-center gap-4 text-lg">
                   <Phone className="h-6 w-6 text-primary" />
                   <span>+91 7489 709 344</span>

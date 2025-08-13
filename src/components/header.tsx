@@ -1,10 +1,11 @@
+
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { Menu, KeyRound } from 'lucide-react';
 import { DharmaHouseLogo } from './icons';
 
 const navLinks = [
@@ -50,9 +51,12 @@ export function Header() {
                 </Link>
             ))}
             </nav>
-            <span className={`text-sm font-medium transition-colors ${isScrolled ? 'text-muted-foreground' : 'text-white/80'}`}>
-                Made by Sanidhya
-            </span>
+             <Button asChild variant="ghost" size="sm" className={`transition-colors ${isScrolled ? 'text-foreground hover:bg-accent' : 'text-white hover:bg-white/20'}`}>
+              <Link href="/admin">
+                <KeyRound className="h-4 w-4 mr-2" />
+                Admin
+              </Link>
+            </Button>
         </div>
         <div className="md:hidden">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -79,6 +83,14 @@ export function Header() {
                       {link.label}
                     </Link>
                   ))}
+                   <Link
+                      href="/admin"
+                      className="text-lg font-medium transition-colors hover:text-primary flex items-center"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <KeyRound className="h-5 w-5 mr-3" />
+                      Admin
+                    </Link>
                 </nav>
                 <div className="mt-auto text-center text-sm text-muted-foreground">
                   Made by Sanidhya

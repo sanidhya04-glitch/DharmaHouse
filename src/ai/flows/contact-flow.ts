@@ -81,6 +81,7 @@ const SendContactMessageInputSchema = z.object({
   message: z.string().describe('The message content.'),
   isAdmin: z.boolean().optional().describe('A flag to indicate if this is an admin request to fetch messages.'),
   messageIdToDelete: z.string().optional().describe('The ID of the message to delete.'),
+  messageIdToToggleRead: z.string().optional().describe('The ID of the message to toggle read status.'),
 }).refine(data => {
     if (!data.isAdmin) {
         return z.string().email().safeParse(data.email).success;
@@ -102,6 +103,7 @@ const MessageSchema = z.object({
     email: z.string(),
     message: z.string(),
     createdAt: z.string(),
+    isRead: z.boolean().optional(),
 });
 
 const SendContactMessageOutputSchema = z.object({
@@ -156,6 +158,20 @@ const contactFlow = ai.defineFlow(
                 const encryptedMessages = await encrypt(JSON.stringify(messages, null, 2));
                 await fs.writeFile(messagesFilePath, encryptedMessages, 'utf-8');
             }
+        } else if (input.messageIdToToggleRead) {
+            let messageFound = false;
+            messages = messages.map((msg: { id: string; isRead?: boolean }) => {
+                if (msg.id === input.messageIdToToggleRead) {
+                    messageFound = true;
+                    return { ...msg, isRead: !msg.isRead };
+                }
+                return msg;
+            });
+
+            if (messageFound) {
+                const encryptedMessages = await encrypt(JSON.stringify(messages, null, 2));
+                await fs.writeFile(messagesFilePath, encryptedMessages, 'utf-8');
+            }
         }
         
         messages.sort((a: { createdAt: string }, b: { createdAt: string }) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -187,6 +203,7 @@ const contactFlow = ai.defineFlow(
         email: input.email,
         message: input.message,
         createdAt: new Date().toISOString(),
+        isRead: false,
       };
 
       messages.push(newMessage);

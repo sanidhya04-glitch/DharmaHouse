@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { sendContactMessage } from '@/ai/flows/contact-flow';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { KeyRound, ShieldAlert, Loader2, MessageSquare, Clock, User, Mail, Trash2 } from 'lucide-react';
+import { KeyRound, ShieldAlert, Loader2, MessageSquare, Clock, User, Mail, Trash2, Search, Inbox, Send, BookMarked } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +27,7 @@ type Message = {
   email: string;
   message: string;
   createdAt: string;
+  isRead?: boolean;
 };
 
 const SECRET_CODE = 'DHARMA@2003';
@@ -38,7 +39,9 @@ export default function AdminPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isTogglingRead, setIsTogglingRead] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Message | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
   const fetchMessages = async () => {
@@ -99,6 +102,45 @@ export default function AdminPage() {
     setIsDeleting(null);
     setShowDeleteConfirm(null);
   };
+  
+  const handleToggleRead = async (messageId: string) => {
+    setIsTogglingRead(messageId);
+    const result = await sendContactMessage({
+      name: 'admin',
+      email: 'admin@local',
+      message: 'toggle read',
+      isAdmin: true,
+      messageIdToToggleRead: messageId,
+    });
+
+    if (result.success && result.messages) {
+      setMessages(result.messages as Message[]);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: result.error || "Failed to update the message status.",
+      });
+    }
+    setIsTogglingRead(null);
+  };
+
+
+  const filteredMessages = useMemo(() => {
+    return messages.filter(msg =>
+      msg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      msg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      msg.message.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [messages, searchTerm]);
+
+  const stats = useMemo(() => {
+    const totalMessages = messages.length;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const newLast7Days = messages.filter(msg => new Date(msg.createdAt) > sevenDaysAgo).length;
+    return { totalMessages, newLast7Days };
+  }, [messages]);
 
   if (!isAuthenticated) {
     return (
@@ -147,21 +189,56 @@ export default function AdminPage() {
         <Header />
         <main className="flex-1 pt-28 bg-grid-white/[0.05]">
           <section className="container max-w-7xl mx-auto">
-              <div className="text-center mb-16 animate-fade-in-up">
+              <div className="text-center mb-12 animate-fade-in-up">
                   <h1 className="font-headline text-4xl md:text-5xl font-bold text-gradient">Admin Dashboard</h1>
                   <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-lg">
-                      Viewing all messages sent via the contact form.
+                      Manage and review all messages sent via the contact form.
                   </p>
+              </div>
+
+              {/* Stats and Search Section */}
+              <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="md:col-span-2 bg-card/50 backdrop-blur-sm border-white/10 shadow-lg">
+                  <CardHeader>
+                    <CardTitle>Message Statistics</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <p className="text-3xl font-bold text-primary">{stats.totalMessages}</p>
+                      <p className="text-muted-foreground">Total Messages</p>
+                    </div>
+                     <div>
+                      <p className="text-3xl font-bold text-primary">{stats.newLast7Days}</p>
+                      <p className="text-muted-foreground">New This Week</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                 <Card className="bg-card/50 backdrop-blur-sm border-white/10 shadow-lg">
+                   <CardHeader>
+                    <CardTitle>Search Messages</CardTitle>
+                  </CardHeader>
+                   <CardContent>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                          placeholder="Filter by name, email..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                   </CardContent>
+                 </Card>
               </div>
 
               {isLoading ? (
                   <div className="flex justify-center items-center h-64">
                       <Loader2 className="h-12 w-12 text-primary animate-spin" />
                   </div>
-              ) : messages.length > 0 ? (
+              ) : filteredMessages.length > 0 ? (
                   <div className="space-y-8">
-                      {messages.map((msg, i) => (
-                          <Card key={msg.id} className="bg-card/50 backdrop-blur-sm border-white/10 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
+                      {filteredMessages.map((msg, i) => (
+                          <Card key={msg.id} className={`bg-card/50 backdrop-blur-sm border-l-4 ${msg.isRead ? 'border-card' : 'border-primary'} shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1 animate-fade-in-up`} style={{ animationDelay: `${i * 100}ms` }}>
                               <CardHeader>
                                   <div className="flex justify-between items-start flex-wrap gap-4">
                                       <div>
@@ -174,20 +251,9 @@ export default function AdminPage() {
                                               {msg.email}
                                           </CardDescription>
                                       </div>
-                                      <div className="flex items-center gap-4">
-                                        <div className="text-right text-sm text-muted-foreground flex items-center gap-2">
-                                            <Clock className="h-4 w-4" />
-                                            <span>{formatDate(msg.createdAt)}</span>
-                                        </div>
-                                        <Button 
-                                            variant="destructive" 
-                                            size="icon"
-                                            onClick={() => setShowDeleteConfirm(msg)}
-                                            disabled={isDeleting === msg.id}
-                                            className="bg-destructive/80 hover:bg-destructive text-destructive-foreground h-10 w-10"
-                                        >
-                                          {isDeleting === msg.id ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 className="h-5 w-5" />}
-                                        </Button>
+                                      <div className="text-right text-sm text-muted-foreground flex items-center gap-2">
+                                          <Clock className="h-4 w-4" />
+                                          <span>{formatDate(msg.createdAt)}</span>
                                       </div>
                                   </div>
                               </CardHeader>
@@ -196,14 +262,42 @@ export default function AdminPage() {
                                       <MessageSquare className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                                       <p className="m-0">{msg.message}</p>
                                   </div>
+                                  <div className="mt-6 pt-4 border-t border-white/10 flex justify-end items-center gap-3">
+                                      <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleToggleRead(msg.id)}
+                                          disabled={isTogglingRead === msg.id}
+                                          className="flex items-center gap-2"
+                                      >
+                                          {isTogglingRead === msg.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookMarked className="h-4 w-4" />}
+                                          <span>{msg.isRead ? 'Mark as Unread' : 'Mark as Read'}</span>
+                                      </Button>
+                                       <a href={`mailto:${msg.email}`} className="inline-flex items-center">
+                                          <Button variant="outline" size="sm" className="flex items-center gap-2">
+                                            <Send className="h-4 w-4" />
+                                            <span>Reply</span>
+                                          </Button>
+                                      </a>
+                                      <Button 
+                                          variant="destructive" 
+                                          size="sm"
+                                          onClick={() => setShowDeleteConfirm(msg)}
+                                          disabled={isDeleting === msg.id}
+                                          className="bg-destructive/80 hover:bg-destructive text-destructive-foreground flex items-center gap-2"
+                                      >
+                                        {isDeleting === msg.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                        <span>Delete</span>
+                                      </Button>
+                                  </div>
                               </CardContent>
                           </Card>
                       ))}
                   </div>
               ) : (
                   <div className="text-center text-muted-foreground text-lg border-2 border-dashed border-white/10 rounded-xl p-12 bg-card/50 backdrop-blur-sm">
-                      <MessageSquare className="mx-auto h-12 w-12" />
-                      <p className="mt-4">No messages have been received yet.</p>
+                      <Inbox className="mx-auto h-12 w-12" />
+                      <p className="mt-4">{searchTerm ? "No messages match your search." : "No messages have been received yet."}</p>
                   </div>
               )}
           </section>

@@ -80,6 +80,7 @@ const SendContactMessageInputSchema = z.object({
   email: z.string().describe('The email address of the sender.'),
   message: z.string().describe('The message content.'),
   isAdmin: z.boolean().optional().describe('A flag to indicate if this is an admin request to fetch messages.'),
+  messageIdToDelete: z.string().optional().describe('The ID of the message to delete.'),
 }).refine(data => {
     if (!data.isAdmin) {
         return z.string().email().safeParse(data.email).success;
@@ -130,21 +131,39 @@ const contactFlow = ai.defineFlow(
 
     if (input.isAdmin) {
       try {
-        const fileContent = await fs.readFile(messagesFilePath, 'utf-8');
+        let fileContent = '';
+        try {
+            fileContent = await fs.readFile(messagesFilePath, 'utf-8');
+        } catch (error: any) {
+            if (error.code === 'ENOENT') {
+                return { success: true, messages: [] }; // File doesn't exist, so no messages.
+            }
+            throw error; // Other errors
+        }
+        
         if (!fileContent) {
             return { success: true, messages: [] };
         }
+        
         const decryptedMessages = await decrypt(fileContent);
-        const messages = JSON.parse(decryptedMessages);
+        let messages = JSON.parse(decryptedMessages);
+
+        if (input.messageIdToDelete) {
+            const initialCount = messages.length;
+            messages = messages.filter((msg: { id: string }) => msg.id !== input.messageIdToDelete);
+            
+            if (messages.length < initialCount) {
+                const encryptedMessages = await encrypt(JSON.stringify(messages, null, 2));
+                await fs.writeFile(messagesFilePath, encryptedMessages, 'utf-8');
+            }
+        }
+        
         messages.sort((a: { createdAt: string }, b: { createdAt: string }) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         return { success: true, messages };
       } catch (error: any) {
-        if (error.code === 'ENOENT') {
-          return { success: true, messages: [] };
-        }
-        console.error('Error reading messages from file:', error);
+        console.error('Error handling admin request:', error);
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-        return { success: false, error: `Failed to fetch messages: ${errorMessage}` };
+        return { success: false, error: `Failed to process admin request: ${errorMessage}` };
       }
     }
 

@@ -12,13 +12,6 @@ const events = [
     hint: "India independence day",
     slug: "independence-day-celebration",
   },
-  {
-    title: "Inter-House Badminton Tournament",
-    date: "August 17, 2025",
-    img: "https://s10896.pcdn.co/wp-content/uploads/2024/01/Pembroke-Generic-Badminton-Tournament-Web-Event-Header.jpg",
-    hint: "badminton tournament",
-    slug: "inter-house-badminton-tournament",
-  },
 ];
 
 export function EventsSection() {

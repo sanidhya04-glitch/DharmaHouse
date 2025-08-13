@@ -32,19 +32,19 @@ export function Header() {
   }, []);
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'border-b border-border/40 bg-background/80 backdrop-blur-lg' : 'bg-transparent'}`}>
+    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'border-b border-border/40 bg-background/80 backdrop-blur-xl' : 'bg-transparent'}`}>
       <div className="container flex h-20 max-w-7xl items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <DharmaHouseLogo className="h-8 w-8 text-primary" />
           <span className="font-headline text-2xl font-bold text-primary">Dharma House</span>
         </Link>
         <div className="hidden md:flex items-center gap-8">
-            <nav className="flex items-center gap-8 text-sm font-medium">
+            <nav className="flex items-center gap-6 text-sm font-medium">
             {navLinks.map((link) => (
                 <Link
                 key={link.href}
                 href={link.href}
-                className={`transition-colors hover:text-primary ${isScrolled ? 'text-foreground' : 'text-white'}`}
+                className={`relative transition-colors hover:text-primary ${isScrolled ? 'text-foreground' : 'text-white'} after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-primary after:scale-x-0 after:origin-left after:transition-transform hover:after:scale-x-100`}
                 >
                 {link.label}
                 </Link>

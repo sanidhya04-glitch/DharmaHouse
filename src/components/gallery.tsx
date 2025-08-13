@@ -24,7 +24,7 @@ export function Gallery() {
         {galleryImages.map((image, index) => (
           <div
             key={index}
-            className="overflow-hidden rounded-lg cursor-pointer group"
+            className="overflow-hidden rounded-lg cursor-pointer group relative"
             onClick={() => setSelectedImage(image)}
           >
             <Image
@@ -35,6 +35,7 @@ export function Gallery() {
               data-ai-hint={image.hint}
               className="h-full w-full object-cover aspect-square transition-transform duration-300 group-hover:scale-110"
             />
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         ))}
       </div>

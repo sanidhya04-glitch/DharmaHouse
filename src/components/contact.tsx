@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { sendContactMessage, type SendContactMessageInput } from '@/ai/flows/contact-flow';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useEffect, useState } from 'react';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -20,6 +21,12 @@ const contactFormSchema = z.object({
 
 export function ContactSection() {
     const { toast } = useToast();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
 
   const form = useForm<SendContactMessageInput>({
     resolver: zodResolver(contactFormSchema),
@@ -73,52 +80,54 @@ export function ContactSection() {
             </div>
             <div className="relative p-8 md:p-10 rounded-xl bg-card border-border/20 shadow-2xl">
                <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-primary to-accent opacity-30 -z-10" />
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-lg">Full Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Your Name" {...field} className="text-lg py-6" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-lg">Email Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="you@example.com" {...field} className="text-lg py-6" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="message"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-lg">Message</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Your message to Dharma House..." rows={5} {...field} className="text-lg" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full transition-transform duration-300 ease-in-out hover:scale-105" size="lg" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
-                  </Button>
-                </form>
-              </Form>
+              {isClient && (
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">Full Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your Name" {...field} className="text-lg py-6" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">Email Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="you@example.com" {...field} className="text-lg py-6" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="message"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">Message</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Your message to Dharma House..." rows={5} {...field} className="text-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full transition-transform duration-300 ease-in-out hover:scale-105" size="lg" disabled={form.formState.isSubmitting}>
+                      {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
+                    </Button>
+                  </form>
+                </Form>
+              )}
             </div>
           </div>
         </section>

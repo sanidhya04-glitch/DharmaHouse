@@ -13,10 +13,21 @@ import { z } from 'zod';
 import 'dotenv/config';
 import fs from 'fs/promises';
 import path from 'path';
+import { scrypt, createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { promisify } from 'util';
 
 // Define the path for the messages file
 const messagesDir = path.join(process.cwd(), 'messages');
 const messagesFilePath = path.join(messagesDir, 'messages.json');
+const scryptAsync = promisify(scrypt);
+
+// Encryption constants
+const ALGORITHM = 'aes-256-gcm';
+const IV_LENGTH = 16;
+const SALT_LENGTH = 64;
+const TAG_LENGTH = 16;
+const SECRET_CODE = 'DHARMA@2003';
+const ENCRYPTION_KEY_PASSWORD = SECRET_CODE;
 
 // Ensure the messages directory exists
 const ensureDirectoryExists = async () => {
@@ -27,6 +38,43 @@ const ensureDirectoryExists = async () => {
   }
 };
 
+async function getKey(salt: Buffer): Promise<Buffer> {
+  return (await scryptAsync(ENCRYPTION_KEY_PASSWORD, salt, 32)) as Buffer;
+}
+
+async function encrypt(text: string): Promise<string> {
+  const salt = randomBytes(SALT_LENGTH);
+  const key = await getKey(salt);
+  const iv = randomBytes(IV_LENGTH);
+  const cipher = createCipheriv(ALGORITHM, key, iv);
+  const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return Buffer.concat([salt, iv, tag, encrypted]).toString('hex');
+}
+
+async function decrypt(encryptedText: string): Promise<string> {
+    try {
+        const encryptedBuffer = Buffer.from(encryptedText, 'hex');
+        const salt = encryptedBuffer.subarray(0, SALT_LENGTH);
+        const iv = encryptedBuffer.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
+        const tag = encryptedBuffer.subarray(SALT_LENGTH + IV_LENGTH, SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
+        const encrypted = encryptedBuffer.subarray(SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
+        
+        const key = await getKey(salt);
+        const decipher = createDecipheriv(ALGORITHM, key, iv);
+        decipher.setAuthTag(tag);
+        
+        const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+        return decrypted.toString('utf8');
+    } catch (error) {
+        console.error("Decryption failed:", error);
+        // This could happen if the file is not encrypted, is corrupted, or the password is wrong.
+        // Returning an empty array string to handle it gracefully.
+        return '[]';
+    }
+}
+
+
 const SendContactMessageInputSchema = z.object({
   name: z.string().describe('The name of the person sending the message.'),
   email: z.string().describe('The email address of the sender.'),
@@ -34,10 +82,8 @@ const SendContactMessageInputSchema = z.object({
   isAdmin: z.boolean().optional().describe('A flag to indicate if this is an admin request to fetch messages.'),
 }).refine(data => {
     if (!data.isAdmin) {
-        // For non-admin, email must be a valid email.
         return z.string().email().safeParse(data.email).success;
     }
-    // For admin, no extra validation is needed for the email field.
     return true;
 }, {
     message: "A valid email is required.",
@@ -83,16 +129,17 @@ const contactFlow = ai.defineFlow(
     await ensureDirectoryExists();
 
     if (input.isAdmin) {
-      // Admin is requesting to fetch messages
       try {
         const fileContent = await fs.readFile(messagesFilePath, 'utf-8');
-        const messages = JSON.parse(fileContent);
-        // Sort messages by date, newest first
+        if (!fileContent) {
+            return { success: true, messages: [] };
+        }
+        const decryptedMessages = await decrypt(fileContent);
+        const messages = JSON.parse(decryptedMessages);
         messages.sort((a: { createdAt: string }, b: { createdAt: string }) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         return { success: true, messages };
       } catch (error: any) {
         if (error.code === 'ENOENT') {
-          // File doesn't exist yet, which is fine. Return empty array.
           return { success: true, messages: [] };
         }
         console.error('Error reading messages from file:', error);
@@ -101,21 +148,22 @@ const contactFlow = ai.defineFlow(
       }
     }
 
-    // A user is sending a message
     try {
       let messages = [];
       try {
         const fileContent = await fs.readFile(messagesFilePath, 'utf-8');
-        messages = JSON.parse(fileContent);
+        if (fileContent) {
+            const decryptedMessages = await decrypt(fileContent);
+            messages = JSON.parse(decryptedMessages);
+        }
       } catch (error: any) {
         if (error.code !== 'ENOENT') {
-          throw error; // Rethrow if it's not a "file not found" error
+          throw error;
         }
-        // If file doesn't exist, we'll create it with the new message.
       }
 
       const newMessage = {
-        id: new Date().getTime().toString(), // Simple unique ID
+        id: new Date().getTime().toString(),
         name: input.name,
         email: input.email,
         message: input.message,
@@ -124,7 +172,8 @@ const contactFlow = ai.defineFlow(
 
       messages.push(newMessage);
 
-      await fs.writeFile(messagesFilePath, JSON.stringify(messages, null, 2), 'utf-8');
+      const encryptedMessages = await encrypt(JSON.stringify(messages, null, 2));
+      await fs.writeFile(messagesFilePath, encryptedMessages, 'utf-8');
       
       console.log('Message saved to file successfully');
       return { success: true };

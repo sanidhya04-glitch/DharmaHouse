@@ -1,0 +1,9 @@
+[
+  {
+    "id": "1755095378334",
+    "name": "Sanidhya ",
+    "email": "abneeshu@gmail.com",
+    "message": "if anybody click send messgae button in contact page , then message is stored in a message folder in project directory , message is stored in json format with time and details so it can be stored for future also and anytime it can be seen",
+    "createdAt": "2025-08-13T14:29:38.334Z"
+  }
+]

@@ -2,21 +2,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getFirestore, collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
-import { app } from '@/lib/firebase';
+import { sendContactMessage } from '@/ai/flows/contact-flow';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { KeyRound, ShieldAlert, Loader2, MessageSquare, Clock, User, Mail } from 'lucide-react';
+import type { Timestamp } from 'firebase/firestore';
 
 type Message = {
   id: string;
   name: string;
   email: string;
   message: string;
-  createdAt: Timestamp;
+  createdAt: Timestamp | Date;
 };
 
 const SECRET_CODE = 'DHARMA@2003';
@@ -29,24 +29,20 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const fetchMessages = async () => {
+        setIsLoading(true);
+        const result = await sendContactMessage({ name: 'admin', email: 'admin@local', message: 'fetch', isAdmin: true });
+
+        if (result.success && result.messages) {
+            setMessages(result.messages as Message[]);
+        } else {
+            setError(result.error || "Failed to fetch messages.");
+        }
+        setIsLoading(false);
+    };
+
     if (isAuthenticated) {
-      const db = getFirestore(app);
-      const messagesCollection = collection(db, 'contacts');
-      const q = query(messagesCollection, orderBy('createdAt', 'desc'));
-
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const msgs = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Message));
-        setMessages(msgs);
-        setIsLoading(false);
-      }, (error) => {
-        console.error("Error fetching messages:", error);
-        setIsLoading(false);
-      });
-
-      return () => unsubscribe();
+      fetchMessages();
     }
   }, [isAuthenticated]);
 
@@ -59,9 +55,14 @@ export default function AdminPage() {
     }
   };
   
-  const formatDate = (timestamp: Timestamp | null) => {
-    if (!timestamp) return 'No date';
-    return new Date(timestamp.seconds * 1000).toLocaleString();
+  const formatDate = (date: Timestamp | Date | null) => {
+    if (!date) return 'No date';
+    // Check if it's a Firestore Timestamp and convert if so
+    if (typeof (date as Timestamp).toDate === 'function') {
+        return (date as Timestamp).toDate().toLocaleString();
+    }
+    // Otherwise, assume it's already a Date object (or a string that can be parsed)
+    return new Date(date).toLocaleString();
   };
 
   if (!isAuthenticated) {

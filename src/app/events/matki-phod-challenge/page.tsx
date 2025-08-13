@@ -25,7 +25,7 @@ export default function MatkiPhodChallengePage() {
                         </div>
                         <div className="relative w-full h-96 rounded-lg overflow-hidden mt-12 shadow-2xl">
                             <Image
-                                src="https://images.unsplash.com/photo-1692298199920-c368383c39f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYXRraSUyMHBob2R8ZW58MHx8fHwxNzU1MDExODg5fDA&ixlib=rb-4.1.0&q=80&w=1080"
+                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTu87nv42z1JRX66GduUFaBrrfMRyeZs2PVQg&s"
                                 alt="Inter-House Matki Phod Challenge"
                                 data-ai-hint="matki phod"
                                 fill

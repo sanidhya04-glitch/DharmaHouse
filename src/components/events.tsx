@@ -8,7 +8,7 @@ const events = [
   {
     title: "Inter-House Matki Phod Challenge",
     date: "August 14, 2025",
-    img: "https://images.unsplash.com/photo-1692298199920-c368383c39f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYXRraSUyMHBob2R8ZW58MHx8fHwxNzU1MDExODg5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTu87nv42z1JRX66GduUFaBrrfMRyeZs2PVQg&s",
     hint: "matki phod",
     slug: "matki-phod-challenge",
   },

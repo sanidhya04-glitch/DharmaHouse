@@ -24,7 +24,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ManageNewsInputSchema } from '@/ai/flows/news-flow';
+import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 type Message = {
@@ -38,7 +38,14 @@ type Message = {
 
 const SECRET_CODE = 'DHARMA@2003';
 
-const newsFormSchema = ManageNewsInputSchema.pick({ article: true }).required();
+const newsFormSchema = z.object({
+  article: z.object({
+    title: z.string().min(1, "Title is required."),
+    content: z.string().min(1, "Content is required."),
+    imageUrl: z.string().url().optional().or(z.literal('')),
+    imageHint: z.string().optional(),
+  }),
+});
 type NewsFormValues = z.infer<typeof newsFormSchema>;
 
 export default function AdminPage() {

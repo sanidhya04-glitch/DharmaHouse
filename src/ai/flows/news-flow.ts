@@ -81,7 +81,7 @@ const NewsArticleSchema = z.object({
     imageHint: z.string().optional(),
 });
 
-export const ManageNewsInputSchema = z.object({
+const ManageNewsInputSchema = z.object({
   action: z.enum(['create', 'fetch', 'delete']),
   article: z.object({
     title: z.string(),

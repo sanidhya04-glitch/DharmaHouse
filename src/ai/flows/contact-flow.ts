@@ -29,16 +29,19 @@ const ensureDirectoryExists = async () => {
 
 const SendContactMessageInputSchema = z.object({
   name: z.string().describe('The name of the person sending the message.'),
-  email: z.string().email().describe('The email address of the sender.'),
+  email: z.string().describe('The email address of the sender.'),
   message: z.string().describe('The message content.'),
   isAdmin: z.boolean().optional().describe('A flag to indicate if this is an admin request to fetch messages.'),
-}).superRefine((data, ctx) => {
-    // If it's an admin request, the email is not required to be a valid email.
-    // The validation for email can be skipped.
-    if (data.isAdmin) {
-        return true;
+}).refine(data => {
+    if (!data.isAdmin) {
+        // For non-admin, email must be a valid email.
+        return z.string().email().safeParse(data.email).success;
     }
-    // For non-admin requests, proceed with default email validation.
+    // For admin, no extra validation is needed for the email field.
+    return true;
+}, {
+    message: "A valid email is required.",
+    path: ["email"],
 });
 
 

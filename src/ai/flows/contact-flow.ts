@@ -10,17 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import * as admin from 'firebase-admin';
-
-// Initialize Firebase Admin SDK only if it hasn't been already
-if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-    });
-}
-
-const db = admin.firestore();
-
+import { db } from '@/lib/firebase-admin';
 
 const SendContactMessageInputSchema = z.object({
   name: z.string().describe('The name of the person sending the message.'),
@@ -76,11 +66,6 @@ const contactFlow = ai.defineFlow(
     outputSchema: SendContactMessageOutputSchema,
   },
   async (input) => {
-    if (!db) {
-        const errorMsg = 'Firestore database is not initialized. Check server credentials.';
-        console.error(errorMsg);
-        return { success: false, error: errorMsg };
-    }
     const messagesCollection = db.collection('contactMessages');
 
     if (input.isAdmin) {

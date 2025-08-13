@@ -6,6 +6,13 @@ import { Calendar } from 'lucide-react';
 
 const events = [
   {
+    title: "Inter-House Matki Phod Challenge",
+    date: "August 14, 2025",
+    img: "https://images.unsplash.com/photo-1692298199920-c368383c39f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYXRraSUyMHBob2R8ZW58MHx8fHwxNzU1MDExODg5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+    hint: "matki phod",
+    slug: "matki-phod-challenge",
+  },
+  {
     title: "Independence Day Celebration",
     date: "August 15, 2025",
     img: "https://images.unsplash.com/photo-1705524220939-dac17cf94236?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxpbmRlcGVuZGVuY2UlMjBkYXklMjBpbmRpYXxlbnwwfHx8fDE3NTQ5MTQ3MTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",

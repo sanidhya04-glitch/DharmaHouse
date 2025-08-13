@@ -8,7 +8,7 @@ import { Footer } from '@/components/footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { KeyRound, ShieldAlert, Loader2, MessageSquare, Clock, User, Mail, Trash2, Search, Inbox, Send, BookMarked } from 'lucide-react';
+import { KeyRound, ShieldAlert, Loader2, MessageSquare, Clock, User, Trash2, Search, Inbox, BookMarked, Users } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 type Message = {
   id: string;
   name: string;
-  email: string;
+  classAndSection: string;
   message: string;
   createdAt: string;
   isRead?: boolean;
@@ -46,7 +46,7 @@ export default function AdminPage() {
 
   const fetchMessages = async () => {
       setIsLoading(true);
-      const result = await sendContactMessage({ name: 'admin', email: 'admin@local', message: 'fetch', isAdmin: true });
+      const result = await sendContactMessage({ name: 'admin', message: 'fetch', isAdmin: true });
 
       if (result.success && result.messages) {
           setMessages(result.messages as Message[]);
@@ -80,7 +80,6 @@ export default function AdminPage() {
     setIsDeleting(messageId);
     const result = await sendContactMessage({
       name: 'admin',
-      email: 'admin@local',
       message: 'delete',
       isAdmin: true,
       messageIdToDelete: messageId,
@@ -107,7 +106,6 @@ export default function AdminPage() {
     setIsTogglingRead(messageId);
     const result = await sendContactMessage({
       name: 'admin',
-      email: 'admin@local',
       message: 'toggle read',
       isAdmin: true,
       messageIdToToggleRead: messageId,
@@ -129,7 +127,7 @@ export default function AdminPage() {
   const filteredMessages = useMemo(() => {
     return messages.filter(msg =>
       msg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      msg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      msg.classAndSection.toLowerCase().includes(searchTerm.toLowerCase()) ||
       msg.message.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [messages, searchTerm]);
@@ -221,7 +219,7 @@ export default function AdminPage() {
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
-                          placeholder="Filter by name, email..."
+                          placeholder="Filter by name, class..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           className="pl-10"
@@ -247,8 +245,8 @@ export default function AdminPage() {
                                               {msg.name}
                                           </CardTitle>
                                           <CardDescription className="flex items-center gap-3 mt-2 text-muted-foreground">
-                                              <Mail className="h-4 w-4 text-primary/80" />
-                                              {msg.email}
+                                              <Users className="h-4 w-4 text-primary/80" />
+                                              {msg.classAndSection}
                                           </CardDescription>
                                       </div>
                                       <div className="text-right text-sm text-muted-foreground flex items-center gap-2">
@@ -273,12 +271,6 @@ export default function AdminPage() {
                                           {isTogglingRead === msg.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookMarked className="h-4 w-4" />}
                                           <span>{msg.isRead ? 'Mark as Unread' : 'Mark as Read'}</span>
                                       </Button>
-                                       <a href={`mailto:${msg.email}`} className="inline-flex items-center">
-                                          <Button variant="outline" size="sm" className="flex items-center gap-2">
-                                            <Send className="h-4 w-4" />
-                                            <span>Reply</span>
-                                          </Button>
-                                      </a>
                                       <Button 
                                           variant="destructive" 
                                           size="sm"

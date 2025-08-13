@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
+  classAndSection: z.string().min(2, { message: "Class and Section must be at least 2 characters." }),
   message: z.string().min(10, { message: "Message must be at least 10 characters." }),
 });
 
@@ -32,7 +32,7 @@ export function ContactSection() {
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
       name: "",
-      email: "",
+      classAndSection: "",
       message: "",
     },
   });
@@ -94,12 +94,12 @@ export function ContactSection() {
                     />
                     <FormField
                       control={form.control}
-                      name="email"
+                      name="classAndSection"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-lg">Email Address</FormLabel>
+                          <FormLabel className="text-lg">Class & Section</FormLabel>
                           <FormControl>
-                            <Input placeholder="you@example.com" {...field} className="text-lg py-6" />
+                            <Input placeholder="e.g., 10th A" {...field} className="text-lg py-6" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

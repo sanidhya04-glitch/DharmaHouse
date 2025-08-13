@@ -77,19 +77,19 @@ async function decrypt(encryptedText: string): Promise<string> {
 
 const SendContactMessageInputSchema = z.object({
   name: z.string().describe('The name of the person sending the message.'),
-  email: z.string().describe('The email address of the sender.'),
+  classAndSection: z.string().optional().describe('The class and section of the sender.'),
   message: z.string().describe('The message content.'),
   isAdmin: z.boolean().optional().describe('A flag to indicate if this is an admin request to fetch messages.'),
   messageIdToDelete: z.string().optional().describe('The ID of the message to delete.'),
   messageIdToToggleRead: z.string().optional().describe('The ID of the message to toggle read status.'),
 }).refine(data => {
     if (!data.isAdmin) {
-        return z.string().email().safeParse(data.email).success;
+        return !!data.classAndSection;
     }
     return true;
 }, {
-    message: "A valid email is required.",
-    path: ["email"],
+    message: "Class and Section is required.",
+    path: ["classAndSection"],
 });
 
 
@@ -100,7 +100,7 @@ export type SendContactMessageInput = z.infer<
 const MessageSchema = z.object({
     id: z.string(),
     name: z.string(),
-    email: z.string(),
+    classAndSection: z.string(),
     message: z.string(),
     createdAt: z.string(),
     isRead: z.boolean().optional(),
@@ -200,7 +200,7 @@ const contactFlow = ai.defineFlow(
       const newMessage = {
         id: new Date().getTime().toString(),
         name: input.name,
-        email: input.email,
+        classAndSection: input.classAndSection!,
         message: input.message,
         createdAt: new Date().toISOString(),
         isRead: false,

@@ -58,7 +58,7 @@ export function ContactSection() {
                 </div>
                  <div className="flex items-center gap-4 text-lg">
                   <Phone className="h-6 w-6 text-primary" />
-                  <span>+91-1234-567890</span>
+                  <span>+91 74897 09344</span>
                 </div>
                 <div className="flex items-start gap-4 text-lg">
                    <MapPin className="h-6 w-6 text-primary mt-1 flex-shrink-0" />

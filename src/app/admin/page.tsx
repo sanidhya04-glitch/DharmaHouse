@@ -3,12 +3,14 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { sendContactMessage } from '@/ai/flows/contact-flow';
+import { manageNews, type NewsArticle, type ManageNewsInput } from '@/ai/flows/news-flow';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { KeyRound, ShieldAlert, Loader2, MessageSquare, Clock, User, Trash2, Search, Inbox, BookMarked, Users } from 'lucide-react';
+import { KeyRound, ShieldAlert, Loader2, MessageSquare, Clock, User, Trash2, Search, Inbox, BookMarked, Users, Newspaper, PlusCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +22,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ManageNewsInputSchema } from '@/ai/flows/news-flow';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 type Message = {
   id: string;
@@ -32,33 +38,49 @@ type Message = {
 
 const SECRET_CODE = 'DHARMA@2003';
 
+const newsFormSchema = ManageNewsInputSchema.pick({ article: true }).required();
+type NewsFormValues = z.infer<typeof newsFormSchema>;
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [error, setError] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [news, setNews] = useState<NewsArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isDeletingNews, setIsDeletingNews] = useState<string | null>(null);
   const [isTogglingRead, setIsTogglingRead] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Message | null>(null);
+  const [showDeleteNewsConfirm, setShowDeleteNewsConfirm] = useState<NewsArticle | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
   const fetchMessages = async () => {
-      setIsLoading(true);
-      const result = await sendContactMessage({ name: 'admin', message: 'fetch', isAdmin: true });
+    setIsLoading(true);
+    const result = await sendContactMessage({ name: 'admin', message: 'fetch', isAdmin: true });
 
-      if (result.success && result.messages) {
-          setMessages(result.messages as Message[]);
+    if (result.success && result.messages) {
+      setMessages(result.messages as Message[]);
+    } else {
+      setError(result.error || "Failed to fetch messages.");
+    }
+    setIsLoading(false);
+  };
+  
+  const fetchNews = async () => {
+      const result = await manageNews({ action: 'fetch' });
+      if (result.success && result.articles) {
+          setNews(result.articles);
       } else {
-          setError(result.error || "Failed to fetch messages.");
+          toast({ variant: 'destructive', title: 'Error', description: result.error || "Failed to fetch news." });
       }
-      setIsLoading(false);
   };
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchMessages();
+      fetchNews();
     }
   }, [isAuthenticated]);
 
@@ -102,6 +124,30 @@ export default function AdminPage() {
     setShowDeleteConfirm(null);
   };
   
+  const handleDeleteNews = async (articleId: string) => {
+    setIsDeletingNews(articleId);
+    const result = await manageNews({
+      action: 'delete',
+      articleIdToDelete: articleId,
+    });
+
+    if (result.success && result.articles) {
+      setNews(result.articles);
+      toast({
+        title: "News Article Deleted",
+        description: "The news article has been successfully deleted.",
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: result.error || "Failed to delete the news article.",
+      });
+    }
+    setIsDeletingNews(null);
+    setShowDeleteNewsConfirm(null);
+  };
+
   const handleToggleRead = async (messageId: string) => {
     setIsTogglingRead(messageId);
     const result = await sendContactMessage({
@@ -123,7 +169,6 @@ export default function AdminPage() {
     setIsTogglingRead(null);
   };
 
-
   const filteredMessages = useMemo(() => {
     return messages.filter(msg =>
       msg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -137,8 +182,24 @@ export default function AdminPage() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const newLast7Days = messages.filter(msg => new Date(msg.createdAt) > sevenDaysAgo).length;
-    return { totalMessages, newLast7Days };
-  }, [messages]);
+    return { totalMessages, newLast7Days, totalNews: news.length };
+  }, [messages, news]);
+
+  const newsForm = useForm<NewsFormValues>({
+      resolver: zodResolver(newsFormSchema),
+      defaultValues: { article: { title: "", content: "", imageUrl: "", imageHint: "" } },
+  });
+
+  const onNewsSubmit: SubmitHandler<NewsFormValues> = async (data) => {
+      const result = await manageNews({ action: 'create', article: data.article });
+      if (result.success && result.articles) {
+          setNews(result.articles);
+          toast({ title: "News Published", description: "The new article is now live." });
+          newsForm.reset();
+      } else {
+          toast({ variant: "destructive", title: "Error", description: result.error || "Failed to publish news." });
+      }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -151,7 +212,7 @@ export default function AdminPage() {
                 <KeyRound className="h-10 w-10 text-primary" />
               </div>
               <CardTitle className="font-headline text-3xl mt-4">Admin Access</CardTitle>
-              <CardDescription>Please enter the secret code to view messages.</CardDescription>
+              <CardDescription>Please enter the secret code to view the dashboard.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -186,11 +247,11 @@ export default function AdminPage() {
       <div className="flex flex-col min-h-dvh bg-background text-foreground dark">
         <Header />
         <main className="flex-1 pt-28 bg-grid-white/[0.05]">
-          <section className="container max-w-7xl mx-auto">
+          <section className="container max-w-7xl mx-auto space-y-12">
               <div className="text-center mb-12 animate-fade-in-up">
                   <h1 className="font-headline text-4xl md:text-5xl font-bold text-gradient">Admin Dashboard</h1>
                   <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-lg">
-                      Manage and review all messages sent via the contact form.
+                      Manage messages and site content.
                   </p>
               </div>
 
@@ -198,9 +259,9 @@ export default function AdminPage() {
               <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="md:col-span-2 bg-card/50 backdrop-blur-sm border-white/10 shadow-lg">
                   <CardHeader>
-                    <CardTitle>Message Statistics</CardTitle>
+                    <CardTitle>Site Statistics</CardTitle>
                   </CardHeader>
-                  <CardContent className="grid grid-cols-2 gap-4 text-center">
+                  <CardContent className="grid grid-cols-3 gap-4 text-center">
                     <div>
                       <p className="text-3xl font-bold text-primary">{stats.totalMessages}</p>
                       <p className="text-muted-foreground">Total Messages</p>
@@ -208,6 +269,10 @@ export default function AdminPage() {
                      <div>
                       <p className="text-3xl font-bold text-primary">{stats.newLast7Days}</p>
                       <p className="text-muted-foreground">New This Week</p>
+                    </div>
+                     <div>
+                      <p className="text-3xl font-bold text-primary">{stats.totalNews}</p>
+                      <p className="text-muted-foreground">Total News</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -229,13 +294,83 @@ export default function AdminPage() {
                  </Card>
               </div>
 
-              {isLoading ? (
-                  <div className="flex justify-center items-center h-64">
-                      <Loader2 className="h-12 w-12 text-primary animate-spin" />
-                  </div>
-              ) : filteredMessages.length > 0 ? (
-                  <div className="space-y-8">
-                      {filteredMessages.map((msg, i) => (
+              {/* News Management Section */}
+              <Card className="bg-card/50 backdrop-blur-sm border-white/10 shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-3 font-headline text-3xl">
+                        <Newspaper className="h-8 w-8 text-primary" />
+                        News & Announcements
+                    </CardTitle>
+                    <CardDescription>Create and manage news articles for the website.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 className="font-bold text-xl mb-4 text-primary">Create New Article</h3>
+                         <Form {...newsForm}>
+                            <form onSubmit={newsForm.handleSubmit(onNewsSubmit)} className="space-y-4">
+                                <FormField control={newsForm.control} name="article.title" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Title</FormLabel>
+                                        <FormControl><Input placeholder="Article Title" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                 <FormField control={newsForm.control} name="article.content" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Content</FormLabel>
+                                        <FormControl><Textarea placeholder="Write the article content here..." rows={4} {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                <FormField control={newsForm.control} name="article.imageUrl" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Image URL (Optional)</FormLabel>
+                                        <FormControl><Input placeholder="https://placehold.co/600x400.png" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                <FormField control={newsForm.control} name="article.imageHint" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Image AI Hint (Optional)</FormLabel>
+                                        <FormControl><Input placeholder="e.g. school event" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                <Button type="submit" disabled={newsForm.formState.isSubmitting} className="w-full">
+                                    {newsForm.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlusCircle className="h-4 w-4" />}
+                                    <span>Publish Article</span>
+                                </Button>
+                            </form>
+                        </Form>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-xl mb-4 text-primary">Published Articles</h3>
+                        <div className="space-y-4 max-h-96 overflow-y-auto pr-4">
+                            {news.length > 0 ? news.map(article => (
+                                <div key={article.id} className="flex items-start justify-between gap-4 p-4 rounded-lg bg-card border">
+                                    <div>
+                                        <p className="font-semibold">{article.title}</p>
+                                        <p className="text-sm text-muted-foreground">{formatDate(article.createdAt)}</p>
+                                    </div>
+                                    <Button variant="destructive" size="icon" onClick={() => setShowDeleteNewsConfirm(article)} disabled={isDeletingNews === article.id}>
+                                        {isDeletingNews === article.id ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4" />}
+                                    </Button>
+                                </div>
+                            )) : <p className="text-muted-foreground text-center py-8">No news articles yet.</p>}
+                        </div>
+                    </div>
+                </CardContent>
+              </Card>
+
+              {/* Messages Section */}
+              <div className="space-y-8">
+                  <h2 className="font-headline text-3xl text-center text-gradient">Contact Messages</h2>
+                  {isLoading ? (
+                      <div className="flex justify-center items-center h-64">
+                          <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                      </div>
+                  ) : filteredMessages.length > 0 ? (
+                      filteredMessages.map((msg, i) => (
                           <Card key={msg.id} className={`bg-card/50 backdrop-blur-sm border-l-4 ${msg.isRead ? 'border-card' : 'border-primary'} shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1 animate-fade-in-up`} style={{ animationDelay: `${i * 100}ms` }}>
                               <CardHeader>
                                   <div className="flex justify-between items-start flex-wrap gap-4">
@@ -284,18 +419,20 @@ export default function AdminPage() {
                                   </div>
                               </CardContent>
                           </Card>
-                      ))}
-                  </div>
-              ) : (
-                  <div className="text-center text-muted-foreground text-lg border-2 border-dashed border-white/10 rounded-xl p-12 bg-card/50 backdrop-blur-sm">
-                      <Inbox className="mx-auto h-12 w-12" />
-                      <p className="mt-4">{searchTerm ? "No messages match your search." : "No messages have been received yet."}</p>
-                  </div>
-              )}
+                      ))
+                  ) : (
+                      <div className="text-center text-muted-foreground text-lg border-2 border-dashed border-white/10 rounded-xl p-12 bg-card/50 backdrop-blur-sm">
+                          <Inbox className="mx-auto h-12 w-12" />
+                          <p className="mt-4">{searchTerm ? "No messages match your search." : "No messages have been received yet."}</p>
+                      </div>
+                  )}
+              </div>
           </section>
         </main>
         <Footer />
       </div>
+
+      {/* Message Delete Dialog */}
       <AlertDialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -309,6 +446,28 @@ export default function AdminPage() {
             <AlertDialogCancel onClick={() => setShowDeleteConfirm(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => showDeleteConfirm && handleDelete(showDeleteConfirm.id)}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Confirm Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* News Delete Dialog */}
+      <AlertDialog open={!!showDeleteNewsConfirm} onOpenChange={(open) => !open && setShowDeleteNewsConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the news article titled
+              <span className="font-semibold text-primary"> "{showDeleteNewsConfirm?.title}"</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteNewsConfirm(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => showDeleteNewsConfirm && handleDeleteNews(showDeleteNewsConfirm.id)}
               className="bg-destructive hover:bg-destructive/90"
             >
               Confirm Delete

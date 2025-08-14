@@ -1,7 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { app } from '@/lib/firebase';
 
 export const metadata: Metadata = {
   title: 'Dharma House Hub | Hasdeo Public School',
@@ -13,8 +12,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Initialize Firebase client app
-  app;
   return (
     <html lang="en" className="scroll-smooth">
       <head>

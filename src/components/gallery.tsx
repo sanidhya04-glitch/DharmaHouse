@@ -11,7 +11,7 @@ type GalleryImage = {
 };
 
 const galleryImages: GalleryImage[] = [
-  { src: "https://storage.googleapis.com/genai-studio-403603-asia-south1.appspot.com/user_6c0d62a3_5b53_4243_a595_05d15f2129e9_in/1724855903964_0.png", alt: "Dharma House students with Independence Day display", hint: "students classroom" },
+  { src: "https://i.imgur.com/gK2RinZ.png", alt: "Dharma House students with Independence Day display", hint: "students classroom" },
   { src: "https://hpschampa.in/assets/uploads/photo/97d4774758ed3b8994166e4593ffab7f.jpeg", alt: "School event", hint: "school event" },
   { src: "https://hpschampa.in/assets/uploads/photo/cfe7672c47899fa866e01c717cf13fc9.jpeg", alt: "School event", hint: "school event" },
   { src: "https://placehold.co/600x400.png", alt: "Matki Phod event", hint: "matki phod" },

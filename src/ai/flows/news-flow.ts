@@ -160,11 +160,7 @@ const newsFlow = ai.defineFlow(
             if (!input.articleIdToDelete) {
                 return { success: false, error: 'Article ID is required for deletion.' };
             }
-            const initialCount = articles.length;
             articles = articles.filter(article => article.id !== input.articleIdToDelete);
-            if (articles.length === initialCount) {
-                 return { success: false, error: 'Article not found.' };
-            }
             break;
     }
 

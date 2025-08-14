@@ -13,6 +13,7 @@ type GalleryImage = {
 const galleryImages: GalleryImage[] = [
   { src: "https://hpschampa.in/assets/uploads/photo/97d4774758ed3b8994166e4593ffab7f.jpeg", alt: "School event", hint: "school event" },
   { src: "https://hpschampa.in/assets/uploads/photo/cfe7672c47899fa866e01c717cf13fc9.jpeg", alt: "School event", hint: "school event" },
+  { src: "https://placehold.co/600x400.png", alt: "Matki Phod event", hint: "matki phod" },
 ];
 
 export function Gallery() {

@@ -5,6 +5,13 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Calendar, ArrowRight } from 'lucide-react';
 
 const events = [
+  {
+    title: 'Extempore Competition',
+    slug: 'extempore-competition',
+    date: 'September 5, 2024',
+    img: 'https://images.unsplash.com/photo-1508925349630-9b5a435a2c24?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwdWJsaWMlMjBzcGVha2luZ3xlbnwwfHx8fDE3MjE5Mjc0MDd8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    hint: 'public speaking',
+  },
 ];
 
 export function EventsSection() {

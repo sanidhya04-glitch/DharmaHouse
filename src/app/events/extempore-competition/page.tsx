@@ -12,9 +12,9 @@ export default function ExtemporeCompetitionPage() {
                     <div className="container max-w-4xl mx-auto">
                         <div className="relative">
                             <Image 
-                                src="https://images.unsplash.com/photo-1508925349630-9b5a435a2c24?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwdWJsaWMlMjBzcGVha2luZ3xlbnwwfHx8fDE3MjE5Mjc0MDd8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                                src="https://i.imgur.com/OqGgI0z.png"
                                 alt="Extempore Competition"
-                                data-ai-hint="public speaking"
+                                data-ai-hint="extempore speech"
                                 width={1200}
                                 height={600}
                                 className="w-full h-96 object-cover rounded-2xl shadow-2xl"

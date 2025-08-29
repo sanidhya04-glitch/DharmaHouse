@@ -12,7 +12,7 @@ export default function ExtemporeCompetitionPage() {
                     <div className="container max-w-4xl mx-auto">
                         <div className="relative">
                             <Image 
-                                src="https://i.imgur.com/OqGgI0z.png"
+                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3y9y_3-bH2gLpZQ1-g_pZ8-lJ9q_yYFwR-g&s"
                                 alt="Extempore Competition"
                                 data-ai-hint="extempore speech"
                                 width={1200}

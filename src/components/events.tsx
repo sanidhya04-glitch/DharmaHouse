@@ -5,13 +5,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Calendar, ArrowRight } from 'lucide-react';
 
 const events = [
-  {
-    title: "Independence Day Celebration",
-    date: "August 15, 2025",
-    img: "https://images.unsplash.com/photo-1705524220939-dac17cf94236?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxpbmRlcGVuZGVuY2UlMjBkYXklMjBpbmRpYXxlbnwwfHx8fDE3NTQ5MTQ3MTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    hint: "India independence day",
-    slug: "independence-day-celebration",
-  },
 ];
 
 export function EventsSection() {
@@ -23,7 +16,7 @@ export function EventsSection() {
               <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-lg">Join us in cheering for our house in these upcoming challenges and celebrations.</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {events.map((event, index) => (
+              {events.length > 0 ? events.map((event, index) => (
                 <Card key={index} className="overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 bg-card border-border/20">
                   <CardHeader className="p-0 overflow-hidden">
                     <Image src={event.img} alt={event.title} data-ai-hint={event.hint} width={600} height={400} className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -42,7 +35,11 @@ export function EventsSection() {
                     </Button>
                   </CardContent>
                 </Card>
-              ))}
+              )) : (
+                <div className="text-center text-muted-foreground text-lg col-span-full">
+                  There are no upcoming events scheduled at the moment. Please check back later!
+                </div>
+              )}
             </div>
           </div>
         </section>

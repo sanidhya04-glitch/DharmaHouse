@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https,"
+        protocol: 'https',
         hostname: 'jaipuriaalambagh.com',
         port: '',
         pathname: '/**',

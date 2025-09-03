@@ -9,15 +9,13 @@ import { Menu, KeyRound } from 'lucide-react';
 import { DharmaHouseLogo } from './icons';
 
 const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About Us' },
-  { href: '/team', label: 'Our Team' },
-  { href: '/events', label: 'Events' },
-  { href: '/achievements', label: 'Achievements' },
-  { href: '/gallery', label: 'Gallery' },
-  { href: '/contact', label: 'Contact' },
-  { href: '/news', label: 'News' },
-  { href: '/join', label: 'Join' },
+  { href: '#home', label: 'Home' },
+  { href: '#about', label: 'About' },
+  { href: '#pillars', label: 'Values' },
+  { href: '#achievements', label: 'Achievements' },
+  { href: '#gallery', label: 'Gallery' },
+  { href: '#team', label: 'Team' },
+  { href: '#contact', label: 'Contact' },
 ];
 
 export function Header() {
@@ -26,14 +24,14 @@ export function Header() {
 
   React.useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'border-b border-border/40 bg-background/80 backdrop-blur-xl' : 'bg-transparent'}`}>
+    <header className={`fixed top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'border-b border-border/40 bg-background/80 backdrop-blur-xl' : 'bg-transparent'}`}>
       <div className="container flex h-20 max-w-7xl items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <DharmaHouseLogo className="h-8 w-8 text-primary" />
@@ -45,13 +43,13 @@ export function Header() {
                 <Link
                 key={link.href}
                 href={link.href}
-                className={`relative transition-colors hover:text-primary ${isScrolled ? 'text-foreground' : 'text-white'} after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-primary after:scale-x-0 after:origin-left after:transition-transform hover:after:scale-x-100`}
+                className="relative transition-colors hover:text-primary text-foreground after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-primary after:scale-x-0 after:origin-left after:transition-transform hover:after:scale-x-100"
                 >
                 {link.label}
                 </Link>
             ))}
             </nav>
-             <Button asChild variant="ghost" size="sm" className={`transition-colors ${isScrolled ? 'text-foreground hover:bg-accent' : 'text-white hover:bg-white/20'}`}>
+             <Button asChild variant="outline" size="sm" className="text-primary border-primary hover:bg-primary hover:text-primary-foreground">
               <Link href="/admin">
                 <KeyRound className="h-4 w-4 mr-2" />
                 Admin
@@ -61,7 +59,7 @@ export function Header() {
         <div className="md:hidden">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className={`${isScrolled ? '' : 'text-white border-white/50 bg-white/10 hover:bg-white/20'}`}>
+              <Button variant="outline" size="icon" className="text-foreground">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Open navigation menu</span>
               </Button>

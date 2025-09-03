@@ -5,7 +5,7 @@ import { Twitter, Instagram, Facebook } from 'lucide-react';
 export function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="w-full border-t bg-card text-foreground">
+    <footer className="w-full border-t bg-secondary text-foreground">
       <div className="container mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 py-16 md:grid-cols-3">
         <div className="flex flex-col items-center md:items-start space-y-4">
           <Link href="/" className="flex items-center gap-3 mb-4">
@@ -13,7 +13,6 @@ export function Footer() {
             <span className="text-3xl font-bold font-headline text-primary">Dharma House</span>
           </Link>
           <p className="text-muted-foreground text-center md:text-left">Hasdeo Public School, Champa, Chhattisgarh</p>
-          <p className="text-muted-foreground mt-1 text-center md:text-left text-lg">"Strength. Discipline. Victory."</p>
         </div>
         <div className="grid grid-cols-2 gap-8 text-center md:text-left md:grid-cols-3 md:col-span-2">
           <div>

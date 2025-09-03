@@ -14,7 +14,7 @@ const galleryImages: GalleryImage[] = [
   { src: "https://hpschampa.in/assets/uploads/photo/6a2e8c2537a7187c32b5d4380907d12f.jpeg", alt: "Dharma House students with Independence Day display", hint: "students classroom" },
   { src: "https://hpschampa.in/assets/uploads/photo/97d4774758ed3b8994166e4593ffab7f.jpeg", alt: "School event", hint: "school event" },
   { src: "https://hpschampa.in/assets/uploads/photo/cfe7672c47899fa866e01c717cf13fc9.jpeg", alt: "School event", hint: "school event" },
-  { src: "https://placehold.co/600x400.png", alt: "Matki Phod event", hint: "matki phod" },
+  { src: "https://i.ibb.co/3kLJZsH/matki-phod.png", alt: "Matki Phod event", hint: "matki phod" },
 ];
 
 export function Gallery() {
@@ -37,7 +37,9 @@ export function Gallery() {
               data-ai-hint={image.hint}
               className="h-full w-full object-cover aspect-square transition-transform duration-300 group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <p className="text-white font-bold text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">{image.alt}</p>
+            </div>
           </div>
         ))}
       </div>
